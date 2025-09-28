@@ -65,6 +65,8 @@
 > **⚠️ Note: This is a proof-of-concept implementation**. While OpenRouter is now integrated as a native provider with Agent system compatibility, comprehensive testing is still ongoing.
 >
 > **This fork with native OpenRouter integration was developed by Sergey Kornilov (Biostochastics)**
+>
+> **📌 Important:** This fork requires a custom @librechat/agents package. See [Syncing with Upstream](#-syncing-with-upstream-librechat) for maintenance instructions.
 
 ### Key Features
 - **🔒 Zero Data Retention (ZDR)**: Privacy toggle in navigation bar - enforce routing only through providers that guarantee no data storage
@@ -301,6 +303,63 @@ We thank [Locize](https://locize.com) for their translation management tools tha
 
 ---
 
+## 🔄 Syncing with Upstream LibreChat
+
+### Keeping Your Fork Updated
+
+This fork maintains compatibility with upstream LibreChat while preserving OpenRouter features. Follow these steps to sync:
+
+#### Quick Sync Script
+```bash
+# Use the provided sync script (stash it first if not committed)
+./sync-with-upstream.sh
+```
+
+#### Manual Sync Process
+```bash
+# 1. Add upstream remote (if not already added)
+git remote add upstream https://github.com/danny-avila/LibreChat.git
+
+# 2. Fetch latest upstream changes
+git fetch upstream main
+
+# 3. Merge upstream (preserves your OpenRouter features)
+git merge upstream/main
+
+# 4. Resolve conflicts (keep your @librechat/agents fork reference)
+# In api/package.json, keep:
+# "@librechat/agents": "github:biostochastics/librechat-agents-openrouter#main"
+
+# 5. Fix Docker build issues on ARM64 (M1/M2 Macs)
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+docker compose build api
+```
+
+### Common Issues & Solutions
+
+#### Docker Build Fails on ARM64
+**Error:** `Cannot find module @rollup/rollup-linux-arm64-musl`
+
+**Solution:**
+```bash
+# Regenerate package-lock.json with correct architecture
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+docker compose build api
+```
+
+#### Peer Dependency Conflicts
+**Solution:** Always use `--legacy-peer-deps` flag when installing:
+```bash
+npm install --legacy-peer-deps
+```
+
+#### Test Failures After Merge
+**Expected:** Tests may fail due to the custom @librechat/agents fork. This doesn't affect functionality.
+
+---
+
 ## 🚀 Fork Attribution
 
 **This fork featuring native OpenRouter integration was developed by:**
@@ -311,5 +370,6 @@ We thank [Locize](https://locize.com) for their translation management tools tha
 - Full Agent system compatibility for OpenRouter
 - Real-time credits tracking integration
 - Auto Router toggle
+- Upstream sync maintenance guide
 
 The OpenRouter native integration enables access to 100+ AI models through a single API with enterprise features, solving the limitation where YAML configuration was incompatible with LibreChat's Agent system.
